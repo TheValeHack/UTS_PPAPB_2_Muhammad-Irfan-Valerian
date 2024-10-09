@@ -7,6 +7,7 @@ import android.widget.ArrayAdapter
 import android.widget.DatePicker.OnDateChangedListener
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.transition.Visibility
 import com.example.pertemuan6.databinding.ActivityMainBinding
 import java.util.Calendar
 
@@ -21,6 +22,7 @@ class MainActivity : AppCompatActivity() {
         with(binding){
 //            Get Array
             val monthList = resources.getStringArray(R.array.month)
+            val kehadiranList = resources.getStringArray(R.array.kehadiran)
 
 //            Initiate
             var selectedTime ="${timePicker.hour}:${timePicker.minute}"
@@ -28,20 +30,39 @@ class MainActivity : AppCompatActivity() {
             _tempCalendar.timeInMillis = System.currentTimeMillis()
             var selectedDate = "${_tempCalendar.get(Calendar.DAY_OF_MONTH)} ${monthList[_tempCalendar.get(Calendar.MONTH)]} ${_tempCalendar.get(Calendar.YEAR)}"
 
-
 //            Kehadiran Dropdown=======================================
             val adapterKehadiran = ArrayAdapter<String>(
-                this,
+                this@MainActivity,
                 android.R.layout.simple_spinner_item,
                 kehadiranList
             )
+            adapterKehadiran.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
             kehadiranSpinner.adapter = adapterKehadiran
 
+            datepicker.init(
+                datepicker.year,
+                datepicker.month,
+                datepicker.dayOfMonth
+            ){
+                _,year,montOfYear,dayOfMonth ->
+                selectedDate = "${dayOfMonth} ${monthList[montOfYear]} ${year}"
+            }
+
+            timePicker.setOnTimeChangedListener{
+                view,hourOfDay,minute ->
+                selectedTime = "${hourOfDay}:${minute}"
+            }
+
+            keteranganEdittext.visibility = View.GONE
 //            Selected Kehadiran
             kehadiranSpinner.onItemSelectedListener =
                 object : AdapterView.OnItemSelectedListener {
                     override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-
+                        if(position !== 0){
+                            keteranganEdittext.visibility = View.VISIBLE
+                        } else {
+                            keteranganEdittext.visibility = View.GONE
+                        }
                     }
 
                     override fun onNothingSelected(parent: AdapterView<*>?) {
@@ -49,8 +70,13 @@ class MainActivity : AppCompatActivity() {
                     }
                 }
 
+            submitButton.setOnClickListener {
+                Toast.makeText(this@MainActivity, "Presensi berhasil $selectedDate jam $selectedTime", Toast.LENGTH_SHORT).show()
+            }
 
 
         }
     }
+
+
 }
